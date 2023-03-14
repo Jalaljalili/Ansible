@@ -1,0 +1,41 @@
+---
+- name: Configure server
+  hosts: your_server_hostname
+  become: true
+
+  tasks:
+    - name: Set timezone
+      timezone:
+        name: your_time_zone
+
+    - name: Disable authentication
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: '^PasswordAuthentication'
+        line: 'PasswordAuthentication no'
+
+    - name: Change SSH port
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: '^#?Port '
+        line: 'Port your_new_ssh_port_number'
+
+    - name: Add authorized key
+      authorized_key:
+        user: your_username
+        state: present
+        key: "{{ lookup('file', '/path/to/your/ssh/key.pub') }}"
+
+    - name: Disable IPv6
+      sysctl:
+        name: net.ipv6.conf.all.disable_ipv6
+        value: 1
+        state: present
+
+    - name: Install atop, iftop, and fail2ban
+      apt:
+        name:
+          - atop
+          - iftop
+          - fail2ban
+        state: present
